@@ -1,0 +1,10 @@
+# Dependencias de Node (son muy grandes y se regeneran en Vercel)
+/node_modules
+
+# Archivos de build y compilación
+/dist
+/build
+
+# Variables de entorno (CLAVES SECRETAS! NO se suben)
+.env
+.env.local
