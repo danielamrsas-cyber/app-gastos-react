@@ -22,57 +22,63 @@ const CATEGORIAS = [
     "Medicamentos"
 ];
 
-// 👥 LISTA DE PERSONAS (Nombres del equipo)
+// 👥 LISTA DE PERSONAS
 const PERSONAS = ["Usuario General", "Julio Castellanos", "Daniel Ospitia", "Equipo Administrativo"]; 
 
 function FormularioGastos({ agregarGasto }) {
   const [monto, setMonto] = useState("");
   const [categoria, setCategoria] = useState("");
   const [fecha, setFecha] = useState("");
-  // NUEVO ESTADO: Inicializa con la primera persona de la lista
-  const [persona, setPersona] = useState(PERSONAS[0]); 
+  const [persona, setPersona] = useState(PERSONAS[0]);
+
+  // 🆕 Nuevo estado para el proyecto
+  const [proyecto, setProyecto] = useState("");
 
   const manejarSubmit = (e) => {
     e.preventDefault();
 
-    // ➡️ Validar campos obligatorios
-    if (!monto || !categoria || !fecha) { 
-      // Usar un modal o mensaje de error en lugar de alert()
+    if (!monto || !categoria || !fecha) {
       console.error("Completa todos los campos (Monto, Categoría, Fecha).");
       return;
     }
 
     const nuevoGasto = {
-      monto: parseFloat(monto), 
+      monto: parseFloat(monto),
       categoria,
       fecha,
-      persona, // ✨ ¡Campo clave para la base de datos!
+      persona,
+
+      // 🆕 Agregar proyecto al objeto
+      proyecto: proyecto.trim(),
     };
 
     agregarGasto(nuevoGasto);
+
     setMonto("");
-    setFecha(""); 
-    // Mantenemos categoría y persona seleccionadas, ya que suele ser lo mismo
+    setFecha("");
+
+    // 🆕 Limpiar también proyecto
+    setProyecto("");
   };
 
   return (
     <form onSubmit={manejarSubmit} className="formulario-gasto">
-      
-      {/* 1. CAMPO DE PERSONA (NUEVO) */}
+
+      {/* 1. CAMPO PERSONA */}
       <div className="form-group">
         <label htmlFor="persona">Pagado por:</label>
         <select 
           id="persona"
-          value={persona} 
+          value={persona}
           onChange={(e) => setPersona(e.target.value)}
         >
-          {PERSONAS.map(p => (
+          {PERSONAS.map((p) => (
             <option key={p} value={p}>{p}</option>
           ))}
         </select>
       </div>
-      
-      {/* 2. CAMPO DE MONTO */}
+
+      {/* 2. MONTO */}
       <div className="form-group">
         <label htmlFor="monto">Monto:</label>
         <input
@@ -85,21 +91,23 @@ function FormularioGastos({ agregarGasto }) {
         />
       </div>
 
-      {/* 3. CAMPO DE CATEGORÍA */}
+      {/* 3. CATEGORÍA */}
       <div className="form-group">
         <label htmlFor="categoria">Categoría:</label>
         <select 
           id="categoria"
-          value={categoria} 
+          value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           required
         >
           <option value="">-- Seleccionar Categoría --</option>
-          {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
+          {CATEGORIAS.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
         </select>
       </div>
 
-      {/* 4. CAMPO DE FECHA */}
+      {/* 4. FECHA */}
       <div className="form-group">
         <label htmlFor="fecha">Fecha:</label>
         <input
@@ -110,8 +118,22 @@ function FormularioGastos({ agregarGasto }) {
           required
         />
       </div>
-      
-      <button type="submit" className="btn-primary">Agregar gasto</button>
+
+      {/* 🆕 5. NUEVO CAMPO DE PROYECTO */}
+      <div className="form-group">
+        <label htmlFor="proyecto">Nombre del Proyecto (Opcional):</label>
+        <input
+          id="proyecto"
+          type="text"
+          value={proyecto}
+          onChange={(e) => setProyecto(e.target.value)}
+          placeholder="Ej: Viaje a Cartagena Enero"
+        />
+      </div>
+
+      <button type="submit" className="btn-primary">
+        Agregar gasto
+      </button>
     </form>
   );
 }

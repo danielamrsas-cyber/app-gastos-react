@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import FormularioGastos from "../components/FormularioGastos";
 import TablaGastos from "../components/TablaGastos";
 import Filtros from "../components/Filtros";
@@ -7,16 +7,22 @@ import Presupuesto from "./Presupuesto"; // Importamos el nuevo componente
 
 function Home({ gastos, agregarGasto, eliminarGasto }) {
   const [gastosFiltrados, setGastosFiltrados] = useState(gastos);
-  // Estado para controlar la vista: 'gastos' o 'presupuesto'
   const [vistaActual, setVistaActual] = useState("gastos");
 
   useEffect(() => {
-    // Cuando los gastos se cargan de Supabase, actualizamos la lista filtrada
     setGastosFiltrados(gastos);
   }, [gastos]);
 
-  // FUNCIÓN CON LA NUEVA LÓGICA DE FECHAS
-  const aplicarFiltros = ({ categoria, desde, hasta, persona }) => {
+  // 1. CALCULAR PROYECTOS ÚNICOS
+  const proyectosUnicos = useMemo(() => {
+    const proyectos = gastos
+      .map((g) => g.proyecto)
+      .filter((p) => p && p.trim() !== "");
+    return [...new Set(proyectos)].sort();
+  }, [gastos]);
+
+  // Ahora recibe 'proyecto' también
+  const aplicarFiltros = ({ categoria, desde, hasta, persona, proyecto }) => {
     let filtrados = [...gastos];
 
     // 1. Filtro de Categoría
@@ -26,27 +32,24 @@ function Home({ gastos, agregarGasto, eliminarGasto }) {
       );
     }
 
-    // 1.2. Filtro de Persona (NUEVO)
+    // 1.2 Filtro de Persona
     if (persona.trim() !== "") {
       filtrados = filtrados.filter(
         (g) => g.persona.toLowerCase() === persona.toLowerCase()
       );
     }
 
-    // 2. Aplicar el filtro de rango de fechas (COMPARACIÓN DE CADENAS "AAAA-MM-DD")
+    // NUEVO: Filtro Proyecto
+    if (proyecto && proyecto.trim() !== "") {
+      filtrados = filtrados.filter((g) => g.proyecto === proyecto);
+    }
+
+    // 2. Filtro de fechas
     filtrados = filtrados.filter((g) => {
-      // La fecha del gasto debe estar en formato "AAAA-MM-DD"
       const gastoFechaStr = g.fecha.substring(0, 10);
 
-      // A. Filtro 'Desde' (Mayor o Igual)
-      if (desde && gastoFechaStr < desde) {
-        return false;
-      }
-
-      // B. Filtro 'Hasta' (Menor o Igual)
-      if (hasta && gastoFechaStr > hasta) {
-        return false;
-      }
+      if (desde && gastoFechaStr < desde) return false;
+      if (hasta && gastoFechaStr > hasta) return false;
 
       return true;
     });
@@ -60,7 +63,6 @@ function Home({ gastos, agregarGasto, eliminarGasto }) {
 
   return (
     <div className="container-content">
-      {/* 🧭 NAVEGACIÓN DE VISTAS */}
       <div className="navigation-tabs">
         <button
           className={vistaActual === "gastos" ? "active" : ""}
@@ -77,19 +79,17 @@ function Home({ gastos, agregarGasto, eliminarGasto }) {
       </div>
 
       {vistaActual === "gastos" ? (
-        // 1. VISTA DE GASTOS (Default)
         <>
-          {/* FormularioGastos ahora tiene el campo "Persona" */}
           <FormularioGastos agregarGasto={agregarGasto} />
           <Filtros
             aplicarFiltros={aplicarFiltros}
             limpiarFiltros={limpiarFiltros}
+            proyectosUnicos={proyectosUnicos} // <--- AGREGADO
           />
           <TablaGastos gastos={gastosFiltrados} eliminarGasto={eliminarGasto} />
           <ResumenGastos gastos={gastosFiltrados} />
         </>
       ) : (
-        // 2. VISTA DE PRESUPUESTO
         <Presupuesto gastos={gastos} />
       )}
     </div>
