@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import FormularioGastos from "./components/FormularioGastos";
-import TablaGastos from "./TablaGastos";
-import Filtros from "./Filtros";
+import FormularioGastos from "../components/FormularioGastos";
+import TablaGastos from "../TablaGastos";
+import Filtros from "../Filtros";
 import ResumenGastos from "./ResumenGastos";
-import { exportarGastosExcel } from "./utils/exportarExcel";
-import { supabase } from "./supabaseClient";
+import { exportarGastosExcel } from "../utils/exportarExcel";
+import { supabase } from "../supabaseClient";
 
 function Home() {
   const [gastos, setGastos] = useState([]);
