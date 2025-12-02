@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "../supabaseClient";
 
 const CATEGORIAS = [
   "Alimentación", "Hidratación", "Tiquetes aéreos",
@@ -9,7 +10,12 @@ const CATEGORIAS = [
   "Papeleria-fotocopias", "Combustible", "Peajes", "Medicamentos"
 ];
 
-const PERSONAS = ["Usuario General", "Julio Castellanos", "Daniel Ospitia", "Equipo Administrativo"]; 
+const PERSONAS = [
+  "Usuario General",
+  "Julio Castellanos",
+  "Daniel Ospitia",
+  "Equipo Administrativo"
+];
 
 function FormularioGastos({ agregarGasto }) {
   const [monto, setMonto] = useState("");
@@ -18,16 +24,53 @@ function FormularioGastos({ agregarGasto }) {
   const [persona, setPersona] = useState(PERSONAS[0]);
   const [proyecto, setProyecto] = useState("");
 
-  const manejarSubmit = (e) => {
+  const manejarSubmit = async (e) => {
     e.preventDefault();
-    if (!monto || !categoria || !fecha) return;
-    const nuevoGasto = { monto: parseFloat(monto), categoria, fecha, persona, proyecto: proyecto.trim() };
-    agregarGasto(nuevoGasto);
-    setMonto(""); setFecha(""); setProyecto("");
+
+    if (!monto || !categoria || !fecha) {
+      alert("Todos los campos obligatorios deben estar completos.");
+      return;
+    }
+
+    const nuevoGasto = {
+      monto: parseFloat(monto),
+      categoria,
+      fecha,
+      persona,
+      proyecto: proyecto.trim(),
+    };
+
+    try {
+      // 🔥 GUARDAR EN SUPABASE
+      const { data, error } = await supabase
+        .from("gastos")
+        .insert([nuevoGasto])
+        .select("*");
+
+      if (error) {
+        console.error("🔥 ERROR SUPABASE:", error);
+        alert("❌ Error guardando el gasto");
+        return;
+      }
+
+      // 🔥 ACTUALIZA ESTADO EN LA PÁGINA
+      agregarGasto(data[0]);
+
+      // 🔥 LIMPIA CAMPOS DESPUÉS DE GUARDAR
+      setMonto("");
+      setCategoria("");
+      setFecha("");
+      setProyecto("");
+
+    } catch (e) {
+      console.error("EXCEPCIÓN:", e);
+      alert("⚠️ Hubo un error inesperado.");
+    }
   };
 
   return (
     <form onSubmit={manejarSubmit} className="formulario-gasto">
+
       <div className="form-group">
         <label>Pagado por:</label>
         <select value={persona} onChange={(e) => setPersona(e.target.value)}>
@@ -37,12 +80,21 @@ function FormularioGastos({ agregarGasto }) {
 
       <div className="form-group">
         <label>Monto:</label>
-        <input type="number" value={monto} onChange={(e) => setMonto(e.target.value)} required />
+        <input
+          type="number"
+          value={monto}
+          onChange={(e) => setMonto(e.target.value)}
+          required
+        />
       </div>
 
       <div className="form-group">
         <label>Categoría:</label>
-        <select value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
+        <select
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+          required
+        >
           <option value="">-- Seleccionar Categoría --</option>
           {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
         </select>
@@ -50,15 +102,27 @@ function FormularioGastos({ agregarGasto }) {
 
       <div className="form-group">
         <label>Fecha:</label>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          required
+        />
       </div>
 
       <div className="form-group">
         <label>Nombre del Proyecto (Opcional):</label>
-        <input type="text" value={proyecto} onChange={(e) => setProyecto(e.target.value)} placeholder="Ej: Viaje a Cartagena Enero" />
+        <input
+          type="text"
+          value={proyecto}
+          onChange={(e) => setProyecto(e.target.value)}
+          placeholder="Ej: Viaje a Cartagena Enero"
+        />
       </div>
 
-      <button type="submit" className="btn-primary">Agregar gasto</button>
+      <button type="submit" className="btn-primary">
+        Agregar gasto
+      </button>
     </form>
   );
 }
