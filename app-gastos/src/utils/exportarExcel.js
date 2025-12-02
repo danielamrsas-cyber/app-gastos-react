@@ -1,18 +1,16 @@
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 
 export function exportarGastosExcel(gastos) {
-    if (!gastos || gastos.length === 0) return alert("No hay datos para exportar");
+  if (!gastos || gastos.length === 0) return;
 
-    const wsData = gastos.map(g => ({
-        Fecha: g.fecha,
-        Persona: g.persona,
-        Categoría: g.categoria,
-        Proyecto: g.proyecto || "",
-        Monto: g.monto
-    }));
+  const wsData = [
+    ["Fecha", "Persona", "Monto", "Categoría", "Proyecto"]
+  ];
 
-    const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(wsData);
-    XLSX.utils.book_append_sheet(wb, ws, "Gastos");
-    XLSX.writeFile(wb, "Gastos.xlsx");
+  gastos.forEach(g => wsData.push([g.fecha, g.persona, g.monto, g.categoria, g.proyecto]));
+
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos");
+  XLSX.writeFile(wb, "gastos.xlsx");
 }
