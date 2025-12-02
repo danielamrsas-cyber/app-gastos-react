@@ -32,37 +32,32 @@ function FormularioGastos({ agregarGasto }) {
       return;
     }
 
+    // --- Guardamos con el nombre real de BD: viaje_id ---
     const nuevoGasto = {
       monto: parseFloat(monto),
       categoria,
       fecha,
       persona,
-      viaje_id: proyecto.trim(), // <-- 👈 CAMBIO CORRECTO
+      viaje_id: proyecto.trim(),
     };
 
-    try {
-      const { data, error } = await supabase
-        .from("gastos")
-        .insert([nuevoGasto])
-        .select("*");
+    const { data, error } = await supabase
+      .from("gastos")
+      .insert([nuevoGasto])
+      .select("*");
 
-      if (error) {
-        console.error("🔥 ERROR SUPABASE:", error);
-        alert("❌ Error guardando el gasto");
-        return;
-      }
-
-      agregarGasto(data[0]);
-
-      setMonto("");
-      setCategoria("");
-      setFecha("");
-      setProyecto("");
-
-    } catch (e) {
-      console.error("EXCEPCIÓN:", e);
-      alert("⚠️ Hubo un error inesperado.");
+    if (error) {
+      console.error("🔥 ERROR SUPABASE:", error);
+      alert("❌ Error guardando el gasto");
+      return;
     }
+
+    agregarGasto(data[0]);
+
+    setMonto("");
+    setCategoria("");
+    setFecha("");
+    setProyecto("");
   };
 
   return (
