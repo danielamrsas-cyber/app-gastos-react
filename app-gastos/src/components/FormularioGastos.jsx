@@ -1,64 +1,98 @@
 import { useState } from "react";
 
-const CATEGORIAS = [
-  "Alimentación", "Hidratación", "Tiquetes aéreos",
-  "Transporte urbano (casa-aeropuerto)", "Transporte (aeropuerto-casa)",
-  "Transporte Casa -oficina cuando traen herramienta", "Transporte en sitio",
-  "Alquiler vehiculo", "Compra materiales", "Atención personal",
-  "Dotación", "Aseo", "Lavanderia", "Cafeteria",
-  "Papeleria-fotocopias", "Combustible", "Peajes", "Medicamentos"
-];
-
-const PERSONAS = ["Usuario General", "Julio Castellanos", "Daniel Ospitia", "Equipo Administrativo"]; 
-
 function FormularioGastos({ agregarGasto }) {
-  const [monto, setMonto] = useState("");
   const [categoria, setCategoria] = useState("");
-  const [fecha, setFecha] = useState("");
-  const [persona, setPersona] = useState(PERSONAS[0]);
+  const [persona, setPersona] = useState("");
   const [proyecto, setProyecto] = useState("");
+  const [monto, setMonto] = useState("");
+  const [fecha, setFecha] = useState("");
 
-  const manejarSubmit = (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!monto || !categoria || !fecha) return;
-    const nuevoGasto = { monto: parseFloat(monto), categoria, fecha, persona, proyecto: proyecto.trim() };
-    agregarGasto(nuevoGasto);
-    setMonto(""); setFecha(""); setProyecto("");
+
+    if (!categoria || !persona || !monto || !fecha) {
+      alert("Por favor, completa todos los campos obligatorios.");
+      return;
+    }
+
+    // Crear el gasto
+    const gasto = {
+      categoria,
+      persona,
+      proyecto,
+      monto: parseFloat(monto),
+      fecha,
+    };
+
+    agregarGasto(gasto);
+
+    // ✨ Limpiar todos los campos después de agregar el gasto
+    setCategoria("");
+    setPersona("");
+    setProyecto("");
+    setMonto("");
+    setFecha("");
   };
 
   return (
-    <form onSubmit={manejarSubmit} className="formulario-gasto">
-      <div className="form-group">
-        <label>Pagado por:</label>
-        <select value={persona} onChange={(e) => setPersona(e.target.value)}>
-          {PERSONAS.map(p => <option key={p} value={p}>{p}</option>)}
+    <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+        {/* Categoría */}
+        <select
+          value={categoria}
+          onChange={(e) => setCategoria(e.target.value)}
+        >
+          <option value="">-- Selecciona categoría --</option>
+          <option value="Comida">Comida</option>
+          <option value="Transporte">Transporte</option>
+          <option value="Hospedaje">Hospedaje</option>
+          <option value="Viajes">Viajes</option>
+          <option value="Otros">Otros</option>
         </select>
-      </div>
 
-      <div className="form-group">
-        <label>Monto:</label>
-        <input type="number" value={monto} onChange={(e) => setMonto(e.target.value)} required />
-      </div>
+        {/* Persona */}
+        <input
+          type="text"
+          placeholder="Persona"
+          value={persona}
+          onChange={(e) => setPersona(e.target.value)}
+        />
 
-      <div className="form-group">
-        <label>Categoría:</label>
-        <select value={categoria} onChange={(e) => setCategoria(e.target.value)} required>
-          <option value="">-- Seleccionar Categoría --</option>
-          {CATEGORIAS.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
-      </div>
+        {/* Proyecto */}
+        <input
+          type="text"
+          placeholder="Proyecto (opcional)"
+          value={proyecto}
+          onChange={(e) => setProyecto(e.target.value)}
+        />
 
-      <div className="form-group">
-        <label>Fecha:</label>
-        <input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} required />
-      </div>
+        {/* Monto */}
+        <input
+          type="number"
+          placeholder="Monto"
+          value={monto}
+          onChange={(e) => setMonto(e.target.value)}
+        />
 
-      <div className="form-group">
-        <label>Nombre del Proyecto (Opcional):</label>
-        <input type="text" value={proyecto} onChange={(e) => setProyecto(e.target.value)} placeholder="Ej: Viaje a Cartagena Enero" />
-      </div>
+        {/* Fecha */}
+        <input
+          type="date"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+        />
 
-      <button type="submit" className="btn-primary">Agregar gasto</button>
+        {/* Botón agregar */}
+        <button
+          type="submit"
+          style={{
+            padding: "10px 15px",
+            borderRadius: "6px",
+            cursor: "pointer",
+          }}
+        >
+          ➕ Agregar Gasto
+        </button>
+      </div>
     </form>
   );
 }
