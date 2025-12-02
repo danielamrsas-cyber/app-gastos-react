@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import FormularioGastos from "../components/FormularioGastos";
-import TablaGastos from "../TablaGastos";
-import Filtros from "../Filtros";
-import ResumenGastos from "./ResumenGastos";
+import TablaGastos from "../components/TablaGastos";
+import Filtros from "../components/Filtros";
+import ResumenGastos from "../components/ResumenGastos";
 import { exportarGastosExcel } from "../utils/exportarExcel";
 import { supabase } from "../supabaseClient";
 
