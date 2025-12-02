@@ -5,6 +5,7 @@ import Filtros from "../components/Filtros";
 import ResumenGastos from "../components/ResumenGastos";
 import { exportarGastosExcel } from "../utils/exportarExcel";
 
+
 function Home() {
   const [gastos, setGastos] = useState([]);
   const [gastosFiltrados, setGastosFiltrados] = useState(null);
