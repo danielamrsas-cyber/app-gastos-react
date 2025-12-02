@@ -37,11 +37,10 @@ function FormularioGastos({ agregarGasto }) {
       categoria,
       fecha,
       persona,
-      proyecto: proyecto.trim(),
+      viaje_id: proyecto.trim(), // <-- 👈 CAMBIO CORRECTO
     };
 
     try {
-      // 🔥 GUARDAR EN SUPABASE
       const { data, error } = await supabase
         .from("gastos")
         .insert([nuevoGasto])
@@ -53,10 +52,8 @@ function FormularioGastos({ agregarGasto }) {
         return;
       }
 
-      // 🔥 ACTUALIZA ESTADO EN LA PÁGINA
       agregarGasto(data[0]);
 
-      // 🔥 LIMPIA CAMPOS DESPUÉS DE GUARDAR
       setMonto("");
       setCategoria("");
       setFecha("");
