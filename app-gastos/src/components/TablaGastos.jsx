@@ -1,4 +1,3 @@
-// Nota: La divisa puede ajustarse según tu país (e.g., 'USD', 'COP', 'MXN')
 const formatter = new Intl.NumberFormat('es-CO', { 
     style: 'currency', 
     currency: 'COP', 
@@ -12,9 +11,9 @@ const TablaGastos = ({ gastos, eliminarGasto }) => {
             <table>
                 <thead>
                     <tr>
-                        {/* ✨ Nueva columna Persona */}
                         <th>Fecha</th>
                         <th>Persona</th>
+                        <th>Proyecto</th> {/* NUEVO 🔥 */}
                         <th>Monto</th>
                         <th>Categoría</th>
                         <th>Acción</th>
@@ -24,18 +23,15 @@ const TablaGastos = ({ gastos, eliminarGasto }) => {
                 <tbody>
                     {gastos.map(gasto => (
                         <tr key={gasto.id}>
-                            <td data-label="Fecha">{gasto.fecha}</td>
+                            <td>{gasto.fecha}</td>
+                            <td>{gasto.persona}</td>
 
-                            {/* ✨ Muestra el nombre */}
-                            <td data-label="Persona">{gasto.persona}</td>
+                            <td>{gasto.proyecto || "-"}</td> {/* NUEVO 🔥 */}
 
-                            <td data-label="Monto">
-                                {formatter.format(gasto.monto)}
-                            </td>
+                            <td>{formatter.format(gasto.monto)}</td>
+                            <td>{gasto.categoria}</td>
 
-                            <td data-label="Categoría">{gasto.categoria}</td>
-
-                            <td data-label="Acción">
+                            <td>
                                 <button 
                                     className="btn-eliminar"
                                     onClick={() => eliminarGasto(gasto.id)}

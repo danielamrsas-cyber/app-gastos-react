@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-// 🎯 LISTA DE CATEGORÍAS (Movida desde utils/constantes)
+// 🎯 LISTA DE CATEGORÍAS
 const CATEGORIAS = [
     "Alimentación", 
     "Hidratación", 
@@ -23,52 +23,53 @@ const CATEGORIAS = [
 ];
 
 // 👥 LISTA DE PERSONAS
-const PERSONAS = ["Usuario General", "Julio Castellanos", "Daniel Ospitia", "Equipo Administrativo"]; 
+const PERSONAS = [
+  "Usuario General",
+  "Julio Castellanos",
+  "Daniel Ospitia",
+  "Equipo Administrativo"
+];
 
 function FormularioGastos({ agregarGasto }) {
   const [monto, setMonto] = useState("");
   const [categoria, setCategoria] = useState("");
   const [fecha, setFecha] = useState("");
   const [persona, setPersona] = useState(PERSONAS[0]);
-
-  // 🆕 Nuevo estado para el proyecto
   const [proyecto, setProyecto] = useState("");
 
   const manejarSubmit = (e) => {
     e.preventDefault();
 
     if (!monto || !categoria || !fecha) {
-      console.error("Completa todos los campos (Monto, Categoría, Fecha).");
+      alert("Completa monto, categoría y fecha.");
       return;
     }
 
     const nuevoGasto = {
+      id: crypto.randomUUID(), // ID ÚNICO 🔥
       monto: parseFloat(monto),
       categoria,
       fecha,
       persona,
-
-      // 🆕 Agregar proyecto al objeto
       proyecto: proyecto.trim(),
     };
 
     agregarGasto(nuevoGasto);
 
+    // reset completo
     setMonto("");
+    setCategoria("");
     setFecha("");
-
-    // 🆕 Limpiar también proyecto
+    setPersona(PERSONAS[0]);
     setProyecto("");
   };
 
   return (
     <form onSubmit={manejarSubmit} className="formulario-gasto">
 
-      {/* 1. CAMPO PERSONA */}
       <div className="form-group">
-        <label htmlFor="persona">Pagado por:</label>
-        <select 
-          id="persona"
+        <label>Pagado por:</label>
+        <select
           value={persona}
           onChange={(e) => setPersona(e.target.value)}
         >
@@ -78,11 +79,9 @@ function FormularioGastos({ agregarGasto }) {
         </select>
       </div>
 
-      {/* 2. MONTO */}
       <div className="form-group">
-        <label htmlFor="monto">Monto:</label>
+        <label>Monto:</label>
         <input
-          id="monto"
           type="number"
           value={monto}
           onChange={(e) => setMonto(e.target.value)}
@@ -91,11 +90,9 @@ function FormularioGastos({ agregarGasto }) {
         />
       </div>
 
-      {/* 3. CATEGORÍA */}
       <div className="form-group">
-        <label htmlFor="categoria">Categoría:</label>
-        <select 
-          id="categoria"
+        <label>Categoría:</label>
+        <select
           value={categoria}
           onChange={(e) => setCategoria(e.target.value)}
           required
@@ -107,11 +104,9 @@ function FormularioGastos({ agregarGasto }) {
         </select>
       </div>
 
-      {/* 4. FECHA */}
       <div className="form-group">
-        <label htmlFor="fecha">Fecha:</label>
+        <label>Fecha:</label>
         <input
-          id="fecha"
           type="date"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
@@ -119,11 +114,9 @@ function FormularioGastos({ agregarGasto }) {
         />
       </div>
 
-      {/* 🆕 5. NUEVO CAMPO DE PROYECTO */}
       <div className="form-group">
-        <label htmlFor="proyecto">Nombre del Proyecto (Opcional):</label>
+        <label>Proyecto (Opcional):</label>
         <input
-          id="proyecto"
           type="text"
           value={proyecto}
           onChange={(e) => setProyecto(e.target.value)}
@@ -131,9 +124,7 @@ function FormularioGastos({ agregarGasto }) {
         />
       </div>
 
-      <button type="submit" className="btn-primary">
-        Agregar gasto
-      </button>
+      <button type="submit" className="btn-primary">Agregar gasto</button>
     </form>
   );
 }

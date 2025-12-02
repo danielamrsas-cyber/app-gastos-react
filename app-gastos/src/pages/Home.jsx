@@ -1,97 +1,96 @@
-import { useEffect, useState, useMemo } from "react";
-import FormularioGastos from "../components/FormularioGastos";
-import TablaGastos from "../components/TablaGastos";
-import Filtros from "../components/Filtros";
-import ResumenGastos from "../components/ResumenGastos";
-import Presupuesto from "./Presupuesto"; // Importamos el nuevo componente
+import { useEffect, useState } from "react";
+import FormularioGastos from "./FormularioGastos";
+import TablaGastos from "./TablaGastos";
+import Filtros from "./Filtros";
+import ResumenGastos from "./ResumenGastos";
+import { exportarGastosExcel } from "./utils/exportarExcel";
 
-function Home({ gastos, agregarGasto, eliminarGasto }) {
-  const [gastosFiltrados, setGastosFiltrados] = useState(gastos);
-  const [vistaActual, setVistaActual] = useState("gastos");
+function Home() {
+  const [gastos, setGastos] = useState([]);
+  const [gastosFiltrados, setGastosFiltrados] = useState(null);
 
+  // 1️⃣ Cargar desde localStorage
   useEffect(() => {
-    setGastosFiltrados(gastos);
+    const data = localStorage.getItem("gastos");
+    if (data) {
+      setGastos(JSON.parse(data));
+    }
+  }, []);
+
+  // 2️⃣ Guardar cambios en localStorage
+  useEffect(() => {
+    localStorage.setItem("gastos", JSON.stringify(gastos));
   }, [gastos]);
 
-  // 1. CALCULAR PROYECTOS ÚNICOS
-  const proyectosUnicos = useMemo(() => {
-    const proyectos = gastos
-      .map((g) => g.proyecto)
-      .filter((p) => p && p.trim() !== "");
-    return [...new Set(proyectos)].sort();
-  }, [gastos]);
+  // 3️⃣ Crear gasto
+  const agregarGasto = (gasto) => {
+    const nuevo = {
+      id: Date.now(),
+      ...gasto,
+    };
+    setGastos([...gastos, nuevo]);
+  };
 
-  // Ahora recibe 'proyecto' también
-  const aplicarFiltros = ({ categoria, desde, hasta, persona, proyecto }) => {
+  // 4️⃣ Eliminar gasto
+  const eliminarGasto = (id) => {
+    setGastos(gastos.filter((g) => g.id !== id));
+  };
+
+  // 5️⃣ Obtener lista única de proyectos
+  const proyectosUnicos = [...new Set(gastos.map(g => g.proyecto).filter(p => p))];
+
+  // 6️⃣ Aplicar filtros
+  const aplicarFiltros = ({ categoria, persona, desde, hasta, proyecto }) => {
     let filtrados = [...gastos];
 
-    // 1. Filtro de Categoría
-    if (categoria.trim() !== "") {
-      filtrados = filtrados.filter(
-        (g) => g.categoria.toLowerCase() === categoria.toLowerCase()
-      );
-    }
+    if (categoria) filtrados = filtrados.filter(g => g.categoria === categoria);
+    if (persona) filtrados = filtrados.filter(g => g.persona === persona);
+    if (proyecto) filtrados = filtrados.filter(g => g.proyecto === proyecto);
 
-    // 1.2 Filtro de Persona
-    if (persona.trim() !== "") {
-      filtrados = filtrados.filter(
-        (g) => g.persona.toLowerCase() === persona.toLowerCase()
-      );
-    }
-
-    // NUEVO: Filtro Proyecto
-    if (proyecto && proyecto.trim() !== "") {
-      filtrados = filtrados.filter((g) => g.proyecto === proyecto);
-    }
-
-    // 2. Filtro de fechas
-    filtrados = filtrados.filter((g) => {
-      const gastoFechaStr = g.fecha.substring(0, 10);
-
-      if (desde && gastoFechaStr < desde) return false;
-      if (hasta && gastoFechaStr > hasta) return false;
-
-      return true;
-    });
+    if (desde) filtrados = filtrados.filter(g => g.fecha >= desde);
+    if (hasta) filtrados = filtrados.filter(g => g.fecha <= hasta);
 
     setGastosFiltrados(filtrados);
   };
 
   const limpiarFiltros = () => {
-    setGastosFiltrados(gastos);
+    setGastosFiltrados(null);
   };
 
+  const dataAmostrar = gastosFiltrados ?? gastos;
+
   return (
-    <div className="container-content">
-      <div className="navigation-tabs">
+    <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "20px" }}>
+
+      <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+        📊 Registro de Gastos
+      </h1>
+
+      {/* FORMULARIO */}
+      <FormularioGastos agregarGasto={agregarGasto} />
+
+      {/* FILTROS */}
+      <Filtros
+        aplicarFiltros={aplicarFiltros}
+        limpiarFiltros={limpiarFiltros}
+        proyectosUnicos={proyectosUnicos}
+      />
+
+      {/* BOTÓN EXPORTAR */}
+      <div style={{ textAlign: "right", margin: "15px 0" }}>
         <button
-          className={vistaActual === "gastos" ? "active" : ""}
-          onClick={() => setVistaActual("gastos")}
+          style={{ padding: "10px 15px", borderRadius: "6px", cursor: "pointer" }}
+          onClick={() => exportarGastosExcel(dataAmostrar)}
         >
-          📝 Gestión de Gastos
-        </button>
-        <button
-          className={vistaActual === "presupuesto" ? "active" : ""}
-          onClick={() => setVistaActual("presupuesto")}
-        >
-          📊 Analizar y Presupuestar
+          📥 Exportar Excel
         </button>
       </div>
 
-      {vistaActual === "gastos" ? (
-        <>
-          <FormularioGastos agregarGasto={agregarGasto} />
-          <Filtros
-            aplicarFiltros={aplicarFiltros}
-            limpiarFiltros={limpiarFiltros}
-            proyectosUnicos={proyectosUnicos} // <--- AGREGADO
-          />
-          <TablaGastos gastos={gastosFiltrados} eliminarGasto={eliminarGasto} />
-          <ResumenGastos gastos={gastosFiltrados} />
-        </>
-      ) : (
-        <Presupuesto gastos={gastos} />
-      )}
+      {/* TABLA */}
+      <TablaGastos gastos={dataAmostrar} eliminarGasto={eliminarGasto} />
+
+      {/* RESUMEN */}
+      <ResumenGastos gastos={dataAmostrar} />
     </div>
   );
 }
