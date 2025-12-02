@@ -1,41 +1,24 @@
-import ExcelJS from "exceljs";
-import { saveAs } from "file-saver";
+import * as XLSX from "xlsx";
 
-export async function exportarGastosExcel(gastos) {
+export function exportarGastosExcel(gastos) {
   if (!gastos || gastos.length === 0) {
     alert("No hay datos para exportar");
     return;
   }
 
-  const workbook = new ExcelJS.Workbook();
-  const sheet = workbook.addWorksheet("Gastos");
+  const datosParaExcel = gastos.map((g) => ({
+    Fecha: g.fecha,
+    Categoría: g.categoria,
+    Persona: g.persona,
+    Proyecto: g.proyecto || "",
+    Descripción: g.descripcion || "",
+    Monto: g.monto
+  }));
 
-  sheet.columns = [
-    { header: "ID", key: "id", width: 10 },
-    { header: "Fecha", key: "fecha", width: 15 },
-    { header: "Monto", key: "monto", width: 10 },
-    { header: "Categoría", key: "categoria", width: 20 },
-    { header: "Persona", key: "persona", width: 20 },
-    { header: "Proyecto", key: "proyecto", width: 30 },
-  ];
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(datosParaExcel);
+  XLSX.utils.book_append_sheet(wb, ws, "Gastos");
 
-  gastos.forEach((g) => {
-    sheet.addRow({
-      id: g.id,
-      fecha: g.fecha ? g.fecha.substring(0, 10) : "",
-      monto: g.monto,
-      categoria: g.categoria,
-      persona: g.persona,
-      proyecto: g.proyecto,
-    });
-  });
-
-  sheet.getRow(1).font = { bold: true };
-
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
-
-  saveAs(blob, `gastos_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  const fecha = new Date().toISOString().split("T")[0];
+  XLSX.writeFile(wb, `Gastos_${fecha}.xlsx`);
 }
